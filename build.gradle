@@ -1,0 +1,46 @@
+apply plugin: 'java-library'
+apply plugin: 'application'
+apply plugin: 'eclipse'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+	compile group: 'com.codeborne', name: 'selenide', version: '4.8'
+	compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.+'
+	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.+'
+
+	testCompile group: 'junit', name: 'junit', version: '4.+'
+	testCompile group: 'org.jmockit', name: 'jmockit', version: '+'
+	testCompile group: 'org.mockito', name: 'mockito-core', version: '+'
+}
+
+// javaコンパイルバージョン
+sourceCompatibility = 1.8
+
+// 文字コード指定
+def defaultEncoding = 'UTF-8'
+tasks.withType(AbstractCompile) each { it.options.encoding = defaultEncoding }
+
+compileTestJava {
+    options.encoding = defaultEncoding
+}
+
+// メインクラス
+mainClassName = 'jp.co.foresight.MainExecute'
+
+// 起動バッチ設定
+startScripts {
+    applicationName = 'LysitheaMacro'
+
+    doLast {
+        // Unix用起動ファイルの削除
+        unixScript.delete()
+    }
+}
+// ファイル追加（差し替え）
+applicationDistribution.from("dist/logback.xml") { into "sysconf" }
+applicationDistribution.from("src/main/java/LysitheaMacro.properties") { into "sysconf" }
+applicationDistribution.from("dist/data.csv") { into "csv" }
+applicationDistribution.from("dist/LysitheaMacro.bat") { into "bin" }
