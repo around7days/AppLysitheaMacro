@@ -37,4 +37,18 @@ public enum PropertyManager {
         return Long.valueOf(bundle.getString(key));
     }
 
+    /**
+     * 値の存在チェック
+     * @param key キー
+     * @return keyに対応する値
+     */
+    public boolean isExist(String key) {
+        if(!bundle.containsKey(key)) {
+            return false;
+        }
+        if(bundle.getString(key).isEmpty()) {
+            return false;
+        }
+        return true;
+    }
 }

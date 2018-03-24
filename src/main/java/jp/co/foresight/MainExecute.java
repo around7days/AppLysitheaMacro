@@ -19,6 +19,7 @@ import org.openqa.selenium.By;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
@@ -34,6 +35,11 @@ public class MainExecute {
 
     /** PropertyManager */
     private static final PropertyManager prop = PropertyManager.INSTANCE;
+
+    /** timeout second */
+    private static final Long timeoutS = prop.getLong("timeout");
+    /** timeout milliSecond */
+    private static final Long timeoutMS = prop.getLong("timeout") * 1000;
 
     /**
      * プログラム起動
@@ -120,7 +126,9 @@ public class MainExecute {
 
         // アラートダイアログクリック回避
         try {
+            sleep(prop.getLong("wait.time.short"));
             switchTo().alert().accept(); // WC01W010：パスワードの期限が切れています。パスワードを変更してください。
+            sleep(prop.getLong("wait.time.short"));
             switchTo().alert().accept(); // WC01W030：パスワードが初期パスワードから変更されていません。パスワードを変更してください。
         } catch (Exception e) {
             // アラートダイアログの表示は条件次第になるので、エラーが発生しても無視
@@ -157,7 +165,7 @@ public class MainExecute {
         $("#side01i").click();
 
         // フレーム切り替え
-        switchTo().parentFrame();
+        switchTo().defaultContent();
 
         logger.info("■メニュー処理終了");
     }
@@ -175,33 +183,42 @@ public class MainExecute {
         // プロジェクトコード登録クリック
         $(By.linkText("◆プロジェクトコード登録")).click();
 
-        // 待機
-        sleep(prop.getLong("wait.time.short"));
-
         // フレーム切り替え
-        switchTo().parentFrame();
+        switchTo().defaultContent();
         switchTo().frame("OPERATION");
+
+        // 画面遷移待ち
+        $(".kinoutitle").waitUntil(Condition.text("プロジェクトコード登録"), timeoutMS);
+        // WebDriverWait wait = new WebDriverWait(WebDriverRunner.getWebDriver(), timeoutS);
+        // wait.until(textToBePresentInElementLocated(By.cssSelector(".kinoutitle"), "プロジェクトコード登録"));
 
         // プロジェクトコード一覧の取得
         Set<String> pjCdList = getPjCdSet(detailList);
 
+        // 言い訳ログ出力
+        logger.info("※プロジェクト一覧の取得に時間が掛かります。しばらくお待ちください。");
+
         // 選択用プロジェクト一覧を取得
-        List<String> beforeList = $$("select[name=cmbCostNoL] option").stream()
-                                                                      .map(ele -> ele.getText())
-                                                                      .map(Util::removeCRLF)
-                                                                      .map(Util::removeBlank)
-                                                                      .collect(Collectors.toList());
+        List<String> beforeList = $("select[name=cmbCostNoL]").findAll("option")
+                                                              .stream()
+                                                              .map(ele -> ele.getText())
+                                                              .map(Util::removeCRLF)
+                                                              .map(Util::removeBlank)
+                                                              .collect(Collectors.toList());
         logger.debug("※選択用プロジェクト一覧はログレベル「trace」で出力");
-        logger.trace("↓↓↓ 選択用プロジェクト一覧 ↓↓↓");
-        beforeList.forEach(logger::trace);
-        logger.trace("↑↑↑ 選択用プロジェクト一覧 ↑↑↑");
+        if (logger.isTraceEnabled()) {
+            logger.trace("↓↓↓ 選択用プロジェクト一覧 ↓↓↓");
+            beforeList.forEach(logger::trace);
+            logger.trace("↑↑↑ 選択用プロジェクト一覧 ↑↑↑");
+        }
 
         // 登録済みプロジェクト一覧を取得
-        List<String> afterList = $$("select[name=cmbCostNoR] option").stream()
-                                                                     .map(ele -> ele.getText())
-                                                                     .map(Util::removeCRLF)
-                                                                     .map(Util::removeBlank)
-                                                                     .collect(Collectors.toList());
+        List<String> afterList = $("select[name=cmbCostNoR]").findAll("option")
+                                                             .stream()
+                                                             .map(ele -> ele.getText())
+                                                             .map(Util::removeCRLF)
+                                                             .map(Util::removeBlank)
+                                                             .collect(Collectors.toList());
         logger.debug("登録済みプロジェクト一覧：{}", afterList);
 
         // プロジェクト登録処理
@@ -226,7 +243,7 @@ public class MainExecute {
         }
 
         // フレーム切り替え
-        switchTo().parentFrame();
+        switchTo().defaultContent();
 
         logger.info("■プロジェクト登録処理終了");
     }
@@ -245,12 +262,15 @@ public class MainExecute {
         // 勤務表一括登録クリック
         $(By.linkText("■勤務表一括登録")).click();
 
-        // 待機
-        sleep(prop.getLong("wait.time.long"));
-
         // フレーム切り替え
-        switchTo().parentFrame();
+        switchTo().defaultContent();
         switchTo().frame("OPERATION");
+
+        // 画面遷移待ち
+        logger.info("※勤務表一括登録画面の表示、及び、要素の読込に時間が掛かります。しばらくお待ちください。");
+        $(".kinoutitle").waitUntil(Condition.text("勤務表一括登録"), timeoutMS);
+        // WebDriverWait wait = new WebDriverWait(WebDriverRunner.getWebDriver(), timeoutS);
+        // wait.until(textToBePresentInElementLocated(By.cssSelector(".kinoutitle"), "勤務表一括登録"));
 
         // 年月度の切換処理
         switchWorkRegistYm(csvData.targetYear, csvData.targetMonth);
@@ -293,34 +313,40 @@ public class MainExecute {
             ElementsCollection pjTimeElement = trElement.findAll("input[name=costQuantity]");
 
             // プロジェクトコード・作業・時間 その1
-            $("select[name=costNoList]").selectOptionContainingText(detail.pjCd1);
-            pjCdElement.get(0).click();
+            $("select[name=costNoList]").selectOption(0);
             if (detail.pjCd1.isEmpty()) {
+                pjCdElement.get(0).click();
                 pjCostElement.get(0).setValue("");
                 pjTimeElement.get(0).setValue("");
             } else {
+                $("select[name=costNoList]").selectOptionContainingText(detail.pjCd1);
+                pjCdElement.get(0).click();
                 pjCostElement.get(0).setValue("00");
                 pjTimeElement.get(0).setValue(detail.pjTime1);
             }
 
             // プロジェクトコード・作業・時間 その2
-            $("select[name=costNoList]").selectOptionContainingText(detail.pjCd2);
-            pjCdElement.get(1).click();
+            $("select[name=costNoList]").selectOption(0);
             if (detail.pjCd2.isEmpty()) {
+                pjCdElement.get(1).click();
                 pjCostElement.get(1).setValue("");
                 pjTimeElement.get(1).setValue("");
             } else {
+                $("select[name=costNoList]").selectOptionContainingText(detail.pjCd2);
+                pjCdElement.get(1).click();
                 pjCostElement.get(1).setValue("00");
                 pjTimeElement.get(1).setValue(detail.pjTime2);
             }
 
             // プロジェクトコード・作業・時間 その3
-            $("select[name=costNoList]").selectOptionContainingText(detail.pjCd3);
-            pjCdElement.get(2).click();
+            $("select[name=costNoList]").selectOption(0);
             if (detail.pjCd3.isEmpty()) {
+                pjCdElement.get(2).click();
                 pjCostElement.get(2).setValue("");
                 pjTimeElement.get(2).setValue("");
             } else {
+                $("select[name=costNoList]").selectOptionContainingText(detail.pjCd3);
+                pjCdElement.get(2).click();
                 pjCostElement.get(2).setValue("00");
                 pjTimeElement.get(2).setValue(detail.pjTime3);
             }
@@ -330,7 +356,7 @@ public class MainExecute {
         $("img[src$='henko_torikeshi.jpg']").click();
 
         // フレーム切り替え
-        // switchTo().parentFrame();
+        // switchTo().defaultContent();
 
         logger.info("■勤務表一括登録処理終了");
     }
@@ -440,8 +466,8 @@ public class MainExecute {
             // 次月クリック
             $(By.partialLinkText("次月")).click();
 
-            // 待機
-            sleep(prop.getLong("wait.time.long"));
+            // 言い訳ログ
+            logger.info("※次月切換に時間が掛かります。しばらくお待ちください。");
 
             // 年月度の一致チェック・再
             b = isMatchYm(targetYm);
@@ -460,17 +486,26 @@ public class MainExecute {
      */
     private boolean isMatchYm(String targetYm) {
 
-        // yyyy/mm形式の値を取得
-        Optional<String> dispYm = $$("form[name=FORM_COMMON] td").stream()
-                                                                 .map(ele -> ele.getText())
-                                                                 .map(Util::removeCRLF)
-                                                                 .map(Util::removeBlank)
-                                                                 .filter(StringUtils::isNotEmpty)
-                                                                 .peek(logger::trace)
-                                                                 .filter(val -> val.matches("..../.."))
-                                                                 .findFirst();
-        // 取得した値の比較
-        boolean b = dispYm.isPresent() && targetYm.equals(dispYm.get());
+        // selenideで画面遷移チェックが出来てないので独自でチェック
+        Optional<String> dispYm = Optional.empty();
+        boolean b = false;
+        for (int cnt = 0; cnt < timeoutS; cnt++) {
+            sleep(1000);
+            // yyyy/mm形式の値を取得
+            dispYm = $$("form[target=OPERATION] td").stream()
+                                                    .map(ele -> ele.getText())
+                                                    .map(Util::removeCRLF)
+                                                    .map(Util::removeBlank)
+                                                    .filter(StringUtils::isNotEmpty)
+                                                    .peek(logger::trace)
+                                                    .filter(val -> val.matches("..../.."))
+                                                    .findFirst();
+            // 取得した値の比較
+            b = dispYm.isPresent() && targetYm.equals(dispYm.get());
+            if (b == true) {
+                break;
+            }
+        }
 
         logger.debug("対象年月：{}　|　画面上の年月：{}", targetYm, dispYm.orElse(""));
         logger.info("年月度の一致チェック結果：{}", b);
@@ -489,7 +524,7 @@ public class MainExecute {
         switchTo().frame("MENU");
 
         // ユーザ名らしき一覧の取得
-        List<String> maybeUserNmList = $$("form[name=FORM_COMMON] td").stream()
+        List<String> maybeUserNmList = $$("form[target=OPERATION] td").stream()
                                                                       .map(ele -> ele.getText())
                                                                       .map(Util::removeCRLF)
                                                                       .map(Util::removeBlank)
@@ -498,7 +533,7 @@ public class MainExecute {
         boolean b = maybeUserNmList.contains(Util.removeBlank(userNm));
 
         // フレーム切り替え
-        switchTo().parentFrame();
+        switchTo().defaultContent();
 
         logger.debug("対象ユーザ名：{}　|　画面上のユーザ名らしき一覧：{}", userNm, maybeUserNmList);
         logger.info("ユーザ名一致チェック結果：{}", b);
@@ -514,14 +549,17 @@ public class MainExecute {
         // ブラウザ指定
         Configuration.browser = prop.getString("browser");
         // ブラウザサイズ
-        Configuration.browserSize = prop.getString("browser.size");
-        // ブラウザを閉じない
+        if (prop.isExist("browser.size")) {
+            Configuration.browserSize = prop.getString("browser.size");
+        }
+        // ブラウザ閉じない
         Configuration.holdBrowserOpen = true;
         // キー入力高速化
         Configuration.fastSetValue = true;
+        // タイムアウト設定
+        Configuration.timeout = timeoutMS;
 
         logger.debug("ブラウザ：", Configuration.browser);
-        logger.debug("ブラウザサイズ：", Configuration.browserSize);
         logger.info("■selenide設定終了");
     }
 

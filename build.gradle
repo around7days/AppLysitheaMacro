@@ -40,7 +40,7 @@ startScripts {
     }
 }
 // ファイル追加（差し替え）
-applicationDistribution.from("dist/logback.xml") { into "sysconf" }
-applicationDistribution.from("src/main/java/LysitheaMacro.properties") { into "sysconf" }
 applicationDistribution.from("dist/data.csv") { into "csv" }
+applicationDistribution.from("dist/logback.xml") { into "sysconf" }
 applicationDistribution.from("dist/LysitheaMacro.bat") { into "bin" }
+applicationDistribution.from("dist/LysitheaMacro.properties") { into "sysconf" }
