@@ -1,11 +1,11 @@
-package jp.co.foresight;
+package jp.co.foresight.com;
 
 import java.io.File;
 
 /**
  * 共通関数
  */
-public class Util {
+public class LysitheaUtil {
     /**
      * 空白除去
      * @param val 文字列
@@ -33,7 +33,7 @@ public class Util {
      */
     public static File getResource(String filePath) {
         try {
-            File file = new File(Util.class.getClassLoader().getResource(filePath).toURI());
+            File file = new File(LysitheaUtil.class.getClassLoader().getResource(filePath).toURI());
             return file;
         } catch (Exception e) {
             return null;

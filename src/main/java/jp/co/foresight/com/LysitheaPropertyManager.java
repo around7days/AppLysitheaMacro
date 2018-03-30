@@ -1,4 +1,4 @@
-package jp.co.foresight;
+package jp.co.foresight.com;
 
 import java.util.ResourceBundle;
 
@@ -7,11 +7,11 @@ import java.util.ResourceBundle;
  * （シングルトン）
  */
 @SuppressWarnings("javadoc")
-public enum PropertyManager {
+public enum LysitheaPropertyManager {
     INSTANCE;
 
     /** リソース名 */
-    private static String propertyName = "LysitheaMacro";
+    private static String propertyName = "Lysithea";
 
     /** プロパティ */
     private static ResourceBundle bundle = null;
@@ -43,10 +43,10 @@ public enum PropertyManager {
      * @return keyに対応する値
      */
     public boolean isExist(String key) {
-        if(!bundle.containsKey(key)) {
+        if (!bundle.containsKey(key)) {
             return false;
         }
-        if(bundle.getString(key).isEmpty()) {
+        if (bundle.getString(key).isEmpty()) {
             return false;
         }
         return true;

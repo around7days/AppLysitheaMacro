@@ -63,10 +63,11 @@ set CMD_LINE_ARGS=%*
 :execute
 @rem Setup the command line
 
+set MAIN_CLASS=jp.co.foresight.main.LysitheaMain
 set CLASSPATH=%APP_HOME%\lib\*;%APP_HOME%\sysconf;%APP_HOME%\csv
 
 @rem Execute LysitheaMacro
-"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %LYSITHEA_MACRO_OPTS%  -classpath "%CLASSPATH%" jp.co.foresight.MainExecute %CMD_LINE_ARGS%
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %LYSITHEA_MACRO_OPTS%  -classpath "%CLASSPATH%" %MAIN_CLASS% %CMD_LINE_ARGS%
 
 pause
 

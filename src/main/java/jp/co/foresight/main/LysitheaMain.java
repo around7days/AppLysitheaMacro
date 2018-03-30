@@ -1,7 +1,7 @@
-package jp.co.foresight;
+package jp.co.foresight.main;
 
 import static com.codeborne.selenide.Selenide.*;
-import static jp.co.foresight.Constant.*;
+import static jp.co.foresight.com.LysitheaConstant.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,16 +25,22 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
 
+import jp.co.foresight.bean.CsvDataBean;
+import jp.co.foresight.bean.CsvDataDetailBean;
+import jp.co.foresight.com.LogicException;
+import jp.co.foresight.com.LysitheaPropertyManager;
+import jp.co.foresight.com.LysitheaUtil;
+
 /**
  * メインクラス
  */
-public class MainExecute {
+public class LysitheaMain {
 
     /** logger */
-    private static final Logger logger = LoggerFactory.getLogger(MainExecute.class);
+    private static final Logger logger = LoggerFactory.getLogger(LysitheaMain.class);
 
     /** PropertyManager */
-    private static final PropertyManager prop = PropertyManager.INSTANCE;
+    private static final LysitheaPropertyManager prop = LysitheaPropertyManager.INSTANCE;
 
     /** timeout second */
     private static final Long timeoutS = prop.getLong("timeout");
@@ -51,7 +57,7 @@ public class MainExecute {
         try {
             // CSVファイル名の取得
             String csvFileNm = args.length > 1 ? args[0] : prop.getString("default.csv.file.name");
-            new MainExecute().execute(csvFileNm);
+            new LysitheaMain().execute(csvFileNm);
         } catch (LogicException e) {
             logger.error("********** システムチェックエラー **********");
             System.exit(1);
@@ -174,7 +180,7 @@ public class MainExecute {
      * プロジェクト登録処理
      * @param detailList 明細情報一覧
      */
-    private void callProjectRegist(List<DetailBean> detailList) {
+    private void callProjectRegist(List<CsvDataDetailBean> detailList) {
         logger.info("■プロジェクト登録処理開始");
 
         // フレーム切り替え
@@ -202,8 +208,8 @@ public class MainExecute {
         List<String> beforeList = $("select[name=cmbCostNoL]").findAll("option")
                                                               .stream()
                                                               .map(ele -> ele.getText())
-                                                              .map(Util::removeCRLF)
-                                                              .map(Util::removeBlank)
+                                                              .map(LysitheaUtil::removeCRLF)
+                                                              .map(LysitheaUtil::removeBlank)
                                                               .collect(Collectors.toList());
         logger.debug("※選択用プロジェクト一覧はログレベル「trace」で出力");
         if (logger.isTraceEnabled()) {
@@ -216,8 +222,8 @@ public class MainExecute {
         List<String> afterList = $("select[name=cmbCostNoR]").findAll("option")
                                                              .stream()
                                                              .map(ele -> ele.getText())
-                                                             .map(Util::removeCRLF)
-                                                             .map(Util::removeBlank)
+                                                             .map(LysitheaUtil::removeCRLF)
+                                                             .map(LysitheaUtil::removeBlank)
                                                              .collect(Collectors.toList());
         logger.debug("登録済みプロジェクト一覧：{}", afterList);
 
@@ -276,7 +282,7 @@ public class MainExecute {
         switchWorkRegistYm(csvData.targetYear, csvData.targetMonth);
 
         // 勤務表入力処理
-        for (DetailBean detail : csvData.detailList) {
+        for (CsvDataDetailBean detail : csvData.detailList) {
             if (!detail.execFlg.equals(FLG_ON)) {
                 // 実行フラグがOFFの場合は何もせずにコンテニュー
                 continue;
@@ -373,7 +379,7 @@ public class MainExecute {
         logger.info("■CSVデータ読込開始");
 
         logger.info("csvファイル名：{}", csvFileNm);
-        File csvFile = Util.getResource(csvFileNm);
+        File csvFile = LysitheaUtil.getResource(csvFileNm);
 
         if (csvFile == null) {
             // ファイルが存在しない場合はエラー
@@ -401,7 +407,7 @@ public class MainExecute {
                           break;
                       case DATA_KBN_D: // 明細情報
                           // 明細情報の生成
-                          DetailBean detail = new DetailBean();
+                          CsvDataDetailBean detail = new CsvDataDetailBean();
                           detail.day = data[1];
                           detail.execFlg = data[2];
                           detail.workKbn = data[3];
@@ -433,7 +439,7 @@ public class MainExecute {
      * @param detailList 明細情報一覧
      * @return プロジェクトコード一覧
      */
-    protected Set<String> getPjCdSet(List<DetailBean> detailList) {
+    protected Set<String> getPjCdSet(List<CsvDataDetailBean> detailList) {
 
         // プロジェクトコード一覧生成
         Set<String> pjCdList = new TreeSet<>();
@@ -494,8 +500,8 @@ public class MainExecute {
             // yyyy/mm形式の値を取得
             dispYm = $$("form[target=OPERATION] td").stream()
                                                     .map(ele -> ele.getText())
-                                                    .map(Util::removeCRLF)
-                                                    .map(Util::removeBlank)
+                                                    .map(LysitheaUtil::removeCRLF)
+                                                    .map(LysitheaUtil::removeBlank)
                                                     .filter(StringUtils::isNotEmpty)
                                                     .peek(logger::trace)
                                                     .filter(val -> val.matches("..../.."))
@@ -526,11 +532,11 @@ public class MainExecute {
         // ユーザ名らしき一覧の取得
         List<String> maybeUserNmList = $$("form[target=OPERATION] td").stream()
                                                                       .map(ele -> ele.getText())
-                                                                      .map(Util::removeCRLF)
-                                                                      .map(Util::removeBlank)
+                                                                      .map(LysitheaUtil::removeCRLF)
+                                                                      .map(LysitheaUtil::removeBlank)
                                                                       .filter(StringUtils::isNotEmpty)
                                                                       .collect(Collectors.toList());
-        boolean b = maybeUserNmList.contains(Util.removeBlank(userNm));
+        boolean b = maybeUserNmList.contains(LysitheaUtil.removeBlank(userNm));
 
         // フレーム切り替え
         switchTo().defaultContent();
@@ -559,7 +565,7 @@ public class MainExecute {
         // タイムアウト設定
         Configuration.timeout = timeoutMS;
 
-        logger.debug("ブラウザ：", Configuration.browser);
+        logger.debug("ブラウザ：{}", Configuration.browser);
         logger.info("■selenide設定終了");
     }
 

@@ -1,4 +1,4 @@
-package jp.co.foresight;
+package jp.co.foresight.main;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -10,11 +10,15 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import jp.co.foresight.bean.CsvDataBean;
+import jp.co.foresight.bean.CsvDataDetailBean;
+import jp.co.foresight.main.LysitheaMain;
+
 @SuppressWarnings("javadoc")
-public class MainExecuteTest {
+public class SelenideMainTest {
 
     // テスト対象クラス
-    MainExecute main = new MainExecute();
+    LysitheaMain main = new LysitheaMain();
 
     @Test
     public final void test_loadCsv_01() throws Exception {
@@ -69,12 +73,12 @@ public class MainExecuteTest {
     public final void test_getPjCdSet_01() throws IOException {
 
         // テストデータ定義
-        List<DetailBean> list = new ArrayList<>();
-        DetailBean detail1 = new DetailBean();
+        List<CsvDataDetailBean> list = new ArrayList<>();
+        CsvDataDetailBean detail1 = new CsvDataDetailBean();
         detail1.pjCd1 = "PJ01";
         detail1.pjCd2 = "PJ02";
         detail1.pjCd3 = "PJ03";
-        DetailBean detail2 = new DetailBean();
+        CsvDataDetailBean detail2 = new CsvDataDetailBean();
         detail2.pjCd1 = "PJ11";
         detail2.pjCd2 = "PJ02";
         detail2.pjCd3 = "";

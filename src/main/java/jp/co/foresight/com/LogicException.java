@@ -1,4 +1,4 @@
-package jp.co.foresight;
+package jp.co.foresight.com;
 
 /**
  * LogicException

@@ -1,9 +1,9 @@
-package jp.co.foresight;
+package jp.co.foresight.com;
 
 /**
  * 定数クラス
  */
-public class Constant {
+public class LysitheaConstant {
 
     /** フラグ：ON */
     public static final String FLG_ON = "1";
