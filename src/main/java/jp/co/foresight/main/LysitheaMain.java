@@ -56,7 +56,7 @@ public class LysitheaMain {
 
         try {
             // CSVファイル名の取得
-            String csvFileNm = args.length > 1 ? args[0] : prop.getString("default.csv.file.name");
+            String csvFileNm = args.length > 0 ? args[0] : prop.getString("default.csv.file.name");
             new LysitheaMain().execute(csvFileNm);
         } catch (LogicException e) {
             logger.error("********** システムチェックエラー **********");
