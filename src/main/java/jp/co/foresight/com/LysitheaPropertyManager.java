@@ -6,7 +6,6 @@ import java.util.ResourceBundle;
  * PropertyManagerクラス<br>
  * （シングルトン）
  */
-@SuppressWarnings("javadoc")
 public enum LysitheaPropertyManager {
     INSTANCE;
 
