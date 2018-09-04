@@ -7,7 +7,7 @@ repositories {
 }
 
 dependencies {
-	compile group: 'com.codeborne', name: 'selenide', version: '4.10.01'
+	compile group: 'com.codeborne', name: 'selenide', version: '4.14.0'
 
 	compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.+'
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.+'
